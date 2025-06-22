@@ -8,6 +8,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+// https://api.openweathermap.org/data/2.5/weather?q={city name}&appid=39540792dedf1579c5821d2dec7dbd8f
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
