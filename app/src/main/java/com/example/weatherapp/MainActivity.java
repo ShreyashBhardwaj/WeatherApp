@@ -1,8 +1,6 @@
 package com.example.weatherapp;
 
 import android.os.Bundle;
-import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -17,62 +15,60 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import com.example.weatherapp.WeatherApi;
+import com.example.weatherapp.databinding.ActivityMainBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-// https://api.openweathermap.org/data/2.5/weather?q=Delhi&appid=39540792dedf1579c5821d2dec7dbd8f
-
 public class MainActivity extends AppCompatActivity {
-    SearchView searchView;
-    TextView cityNameTextView, tempTextView, weatherTextView, maxTempTextView, minTempTextView, humidityTextView, windSpeedTextView, sunriseTextView, sunsetTextView, seaLevelTextView;
 
-    // API helper
-    WeatherApi weatherApi;
+    // ✅ One binding instance — replaces ALL findViewById
+    private ActivityMainBinding binding;
 
-    String API_KEY = "39540792dedf1579c5821d2dec7dbd8f";
+    // ✅ Retrofit API
+    private WeatherApi weatherApi;
+
+    // ✅ Your API key
+    private final String API_KEY = "39540792dedf1579c5821d2dec7dbd8f";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+
+        // ✅ Inflate binding and set root view
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // ✅ Handle edge-to-edge insets if needed
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-
-
-        // Bind all views
-        searchView = findViewById(R.id.searchView);
-        cityNameTextView = findViewById(R.id.cityName);
-        tempTextView = findViewById(R.id.temp);
-        weatherTextView = findViewById(R.id.weather);
-        maxTempTextView = findViewById(R.id.max_temp);
-        minTempTextView = findViewById(R.id.min_temp);
-        humidityTextView = findViewById(R.id.humidity);
-        windSpeedTextView = findViewById(R.id.wind_speed);
-        sunriseTextView = findViewById(R.id.sunrise);
-        sunsetTextView = findViewById(R.id.sunset);
-        seaLevelTextView = findViewById(R.id.sea_level);
-
-        // Initialize Retrofit
+        // ✅ Initialize Retrofit
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.openweathermap.org/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         weatherApi = retrofit.create(WeatherApi.class);
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE");
+        String currentDay = dayFormat.format(new Date());
+        binding.day.setText(currentDay);
 
-        // Setup SearchView listener
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+// Get current date, e.g., "June 21"
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY");
+        String currentDate = dateFormat.format(new Date());
+        binding.date.setText(currentDate);
+
+        // ✅ SearchView listener using binding
+        binding.searchView.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 fetchWeather(query.trim());
-                searchView.clearFocus(); // close keyboard
+                binding.searchView.clearFocus(); // Hide keyboard
                 return true;
             }
 
@@ -81,19 +77,11 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-
-    }
-    private String formatUnixTime(long unixSeconds) {
-        Date date = new java.util.Date(unixSeconds * 1000L);
-        SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm");
-        sdf.setTimeZone(java.util.TimeZone.getDefault());
-        return sdf.format(date);
     }
 
-
+    // ✅ Weather API call
     private void fetchWeather(String cityName) {
-        Call<WeatherResponse> call = weatherApi.getWeatherByCity(cityName, API_KEY);
+        Call<WeatherResponse> call = weatherApi.getWeatherByCity(cityName, API_KEY, "metric");
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
@@ -101,18 +89,45 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     WeatherResponse data = response.body();
 
-                    // Bind API data to TextViews
-                    cityNameTextView.setText(data.getName());
-                    tempTextView.setText(data.getMain().getTemp() + " °C");
-                    weatherTextView.setText(data.getWeather().get(0).getDescription());
-                    maxTempTextView.setText("Max: " + data.getMain().getTemp_max() + " °C");
-                    minTempTextView.setText("Min: " + data.getMain().getTemp_min() + " °C");
-                    humidityTextView.setText(data.getMain().getHumidity() + " %");
-                    windSpeedTextView.setText(data.getWind().getSpeed() + " m/s");
-                    seaLevelTextView.setText(data.getMain().getSea_level() + " hPa");
-                    sunriseTextView.setText(formatUnixTime(data.getSys().getSunrise()));
-                    sunsetTextView.setText(formatUnixTime(data.getSys().getSunset()));
+                    // ✅ Bind data to views via binding
+                    binding.cityName.setText(data.getName());
+                    binding.temp.setText(data.getMain().getTemp() + " °C");
+                    String description = data.getWeather().get(0).getDescription();
+                    String[] words = description.split(" ");
+                    if (words.length > 1) {
+                        StringBuilder builder = new StringBuilder();
+                        for (String word : words) {
+                            builder.append(word).append("\n");
+                        }
+                        // Remove trailing newline
+                        description = builder.toString().trim();
+                    }
 
+                    binding.weather.setText(description);
+                    binding.maxTemp.setText("Max: " + data.getMain().getTemp_max() + " °C");
+                    binding.minTemp.setText("Min: " + data.getMain().getTemp_min() + " °C");
+                    binding.humidity.setText(data.getMain().getHumidity() + " %");
+                    binding.windSpeed.setText(data.getWind().getSpeed() + " m/s");
+                    binding.seaLevel.setText(data.getMain().getSea_level() + " hPa");
+                    binding.sunrise.setText(formatUnixTime(data.getSys().getSunrise()));
+                    binding.sunset.setText(formatUnixTime(data.getSys().getSunset()));
+
+                    double temp = data.getMain().getTemp();
+                    double tempMin = data.getMain().getTemp_min();
+                    double tempMax = data.getMain().getTemp_max();
+
+// If min or max equal current temp, just show "N/A" or skip:
+                    if (tempMin == temp) {
+                        binding.minTemp.setText("");
+                    } else {
+                        binding.minTemp.setText("Min: " + tempMin + " °C");
+                    }
+
+                    if (tempMax == temp) {
+                        binding.maxTemp.setText("");
+                    } else {
+                        binding.maxTemp.setText("Max: " + tempMax + " °C");
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, "City not found", Toast.LENGTH_SHORT).show();
                 }
@@ -125,5 +140,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    // ✅ Helper to format UNIX time
+    private String formatUnixTime(long unixSeconds) {
+        Date date = new java.util.Date(unixSeconds * 1000L);
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm");
+        sdf.setTimeZone(java.util.TimeZone.getDefault());
+        return sdf.format(date);
+    }
 }

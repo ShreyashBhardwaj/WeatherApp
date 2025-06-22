@@ -7,6 +7,7 @@ public interface WeatherApi {
     @GET("data/2.5/weather")
     Call<WeatherResponse> getWeatherByCity(
             @Query("q") String city,
-            @Query("appid") String apiKey
+            @Query("appid") String apiKey,
+            @Query("units") String units
     );
 }
