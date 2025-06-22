@@ -53,12 +53,13 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="80dp"
         android:fontFamily="@font/merriweathersans_bold"
         android:text="Today"
         android:textColor="@color/black"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.572"
         app:layout_constraintStart_toEndOf="@+id/lottieAnimationView"
         app:layout_constraintTop_toBottomOf="@+id/cityName" />
 
@@ -66,6 +67,7 @@
         android:id="@+id/temp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:fontFamily="@font/merriweathersans_semibold"
         android:text="00:00 ℃"
         android:textColor="@color/black"

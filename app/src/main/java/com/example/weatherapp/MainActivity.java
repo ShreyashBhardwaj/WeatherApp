@@ -62,13 +62,16 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY");
         String currentDate = dateFormat.format(new Date());
         binding.date.setText(currentDate);
+        binding.minTemp.setText("");
+        binding.maxTemp.setText("");
+
 
         // ✅ SearchView listener using binding
         binding.searchView.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 fetchWeather(query.trim());
-                binding.searchView.clearFocus(); // Hide keyboard
+//                binding.searchView.clearFocus(); // Hide keyboard
                 return true;
             }
 
@@ -102,6 +105,31 @@ public class MainActivity extends AppCompatActivity {
                         // Remove trailing newline
                         description = builder.toString().trim();
                     }
+                    String weatherMain = data.getWeather().get(0).getMain();
+
+                    switch (weatherMain) {
+                        case "Clear":
+                            binding.main.setBackgroundResource(R.drawable.sunny_background);
+                            break;
+                        case "Clouds":
+                        case "Mist":
+                            binding.main.setBackgroundResource(R.drawable.colud_background);
+                            binding.lottieAnimationView.setAnimation(R.raw.cloud);
+                            break;
+                        case "Rain":
+                        case "Drizzle":
+                            binding.main.setBackgroundResource(R.drawable.rain_background);
+                            binding.lottieAnimationView.setAnimation(R.raw.rain);
+                            break;
+                        case "Snow":
+                            binding.main.setBackgroundResource(R.drawable.snow_background);
+                            binding.lottieAnimationView.setAnimation(R.raw.snow);
+                            break;
+                        default:
+                            binding.main.setBackgroundResource(R.drawable.sunny_background);
+                            break;
+                    }
+
 
                     binding.weather.setText(description);
                     binding.maxTemp.setText("Max: " + data.getMain().getTemp_max() + " °C");
@@ -111,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
                     binding.seaLevel.setText(data.getMain().getSea_level() + " hPa");
                     binding.sunrise.setText(formatUnixTime(data.getSys().getSunrise()));
                     binding.sunset.setText(formatUnixTime(data.getSys().getSunset()));
+
+
 
                     double temp = data.getMain().getTemp();
                     double tempMin = data.getMain().getTemp_min();

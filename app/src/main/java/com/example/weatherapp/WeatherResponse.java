@@ -1,4 +1,5 @@
 package com.example.weatherapp;
+
 import java.util.List;
 
 public class WeatherResponse {
@@ -8,7 +9,6 @@ public class WeatherResponse {
     private Wind wind;
     private Sys sys;
 
-    // Getters & Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -48,7 +48,11 @@ public class WeatherResponse {
     }
 
     public static class Weather {
+        private String main;         // ✅ ADD THIS!
         private String description;
+
+        public String getMain() { return main; }   // ✅ Getter
+        public void setMain(String main) { this.main = main; } // ✅ Setter
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
